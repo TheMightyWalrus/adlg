@@ -5,6 +5,7 @@
 #ifndef ADLSTRING_H
 #define ADLSTRING_H
 
+#define DEFAULT_FIFO_SIZE 5
 typedef struct edge {
 	unsigned int index;
 	struct edge *pred;
