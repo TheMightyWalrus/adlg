@@ -47,5 +47,3 @@ StringStack* enlargeStringStack(StringStack* sstack, unsigned int enlargement) {
 
 
 
-
-

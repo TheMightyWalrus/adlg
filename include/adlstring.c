@@ -190,6 +190,10 @@ FStateMachine *buildMachine(Graph *g) {
 		return NULL;
 	}
 
+	void* createEdgeParams = (void*)malloc(sizeof(CreateEdgeParams));
+	((CreateEdgeParams*)createEdgeParams)->graph = g;
+	((CreateEdgeParams*)createEdgeParams)->machine = machine;
+
 	defineAsFinal(6,machine);
 	defineAsError(7,machine);
 
@@ -224,11 +228,6 @@ FStateMachine *buildMachine(Graph *g) {
 	defineTransition(5, ":", 7, machine);
 
 	defineDefaultTransition(6, 7, machine);	
-
-	void* createEdgeParams = (void*)malloc(sizeof(CreateEdgeParams));
-	((CreateEdgeParams*)createEdgeParams)->graph = g;
-	((CreateEdgeParams*)createEdgeParams)->machine = machine;
-
 
 	return machine;
 }
