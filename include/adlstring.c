@@ -1,5 +1,6 @@
 #include"adlstring.h"
 #include"fstatemachine.h"
+#include"stringstack.h"
 #include<string.h>
 #include<stdio.h>
 #include<stdlib.h>
@@ -183,49 +184,51 @@ void printMachine(FStateMachine *machine) {
 
 
 FStateMachine *buildMachine(Graph *g) {
-	FStateMachine *machine = createMachine(9);
+	FStateMachine *machine = createMachine(8);
 
 	if(machine == NULL) {
 		return NULL;
 	}
 
-	defineAsFinal(7, machine);
-	defineAsError(8, machine);
+	defineAsFinal(6,machine);
+	defineAsError(7,machine);
+
+	defineDefaultTransition(0, 1, machine);
+	defineTransition(0, ":", 7, machine);
+	defineTransition(0, ";", 7, machine);
+	defineTransition(0, ",", 7, machine);
+
+	defineDefaultTransition(1, 1, machine);
+	defineTransition(1, ":", 2, machine);
+	defineTransition(1, ",", 7, machine);
+	defineTransition(1, ";", 7, machine);
+
+	defineDefaultTransition(2, 3, machine);
+	defineTransition(2, ";", 5, machine);
+	defineTransition(2, ",", 7, machine);
+	defineTransition(2, ":", 7, machine);
+
+	defineDefaultTransition(3, 3, machine);
+	defineTransition(3, ",", 4, machine);
+	defineTransition(3, ":", 7, machine);
+	defineTransition(3, ";", 5, machine);
+
+	defineDefaultTransition(4, 3, machine);
+	defineTransition(4, ",", 7, machine);
+	defineTransition(4, ";", 7, machine);
+	defineTransition(4, ",", 7, machine);
+
+	defineDefaultTransition(5, 1, machine);
+	defineTransition(5, ";", 6, machine);
+	defineTransition(5, ",", 7, machine);
+	defineTransition(5, ":", 7, machine);
+
+	defineDefaultTransition(6, 7, machine);	
 
 	void* createEdgeParams = (void*)malloc(sizeof(CreateEdgeParams));
 	((CreateEdgeParams*)createEdgeParams)->graph = g;
 	((CreateEdgeParams*)createEdgeParams)->machine = machine;
 
-	defineTransition(0, ":", 8, machine);
-	defineTransition(0, ";", 8, machine);
-	defineDefaultTransition(0, 1, machine);
-
-	bindEntryFunction(1, &onEntryCreate, createEdgeParams, machine);
-	defineTransition(1, ":", 2, machine);
-
-	defineTransition(2, ";", 6, machine);
-	defineTransition(2, ":", 8, machine);
-	defineTransition(2, ",", 8, machine);
-	defineDefaultTransition(2, 3, machine);
-
-	void* createEdgeAndInsertParams = createEdgeParams;
-
-	bindEntryFunction(3, &onEntryCreateAndInsert, createEdgeAndInsertParams, machine);
-	defineTransition(3, ",", 4, machine);
-	defineTransition(3, ";", 5, machine);
-	
-	defineTransition(4, ",", 8, machine);
-	defineTransition(4, ";", 8, machine);
-	defineTransition(4, ":", 8, machine);
-	defineDefaultTransition(4, 3, machine);
-
-	defineTransition(5, ";", 7, machine);
-	defineDefaultTransition(5, 1, machine);
-
-	defineTransition(6, ";", 7, machine);
-	defineTransition(6, ":", 8, machine);
-	defineTransition(6, ",", 8, machine);
-	defineDefaultTransition(6, 1, machine);
 
 	return machine;
 }
@@ -274,15 +277,20 @@ Graph *generateGraph(const char *adlstring) {
 	char terminatedChar[5];
 	const char *ptr = adlstring;
 	unsigned int byteLength = nextCharacter(ptr);
+	printf("%i\n", byteLength);
 
 	while(byteLength) {
 		memset(terminatedChar, 0, 5);
 		strncpy(terminatedChar, ptr, byteLength);
-		
+
 		computeInput(terminatedChar, machine);
+
+		ptr += byteLength;
+		byteLength = nextCharacter(ptr);
 
 		if(inError(machine)) {
 			puts("Parsing and building failed. Ended in errorstate");
+			printf("Unexpected %s",terminatedChar);
 			destroyMachine(machine);
 			break;
 		} else if(inAccepted(machine)) {
@@ -290,9 +298,6 @@ Graph *generateGraph(const char *adlstring) {
 			destroyMachine(machine);
 			break;
 		}
-
-		ptr += byteLength;
-		byteLength = nextCharacter(ptr);
 	}
 
 	return g;
