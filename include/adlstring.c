@@ -117,9 +117,35 @@ typedef struct voidParams {
 } VoidParams;
 
 typedef struct createEdgeParams {
-	Graph* graph;
-	FStateMachine* machine;
+	Graph *graph;
+	FStateMachine *machine;
 } CreateEdgeParams;
+
+typedef struct buildStackParams {
+	FStateMachine *machine;
+	StringStack *stack;
+} BuildStackParams;
+
+void buildStack(void* params) {
+	StringStack *stack = ((BuildStackParams)params)->stack;
+	FStateMachine *machine = ((BuildStackParams)params)->machine;	
+
+	if(!hasPlace(stack)) {
+		stack = enlargeStringStack(stack, stack->size);
+		((BuildStackParams)params)->stack = stack;
+	}
+
+	pushString(stack, machine->lastInput);
+}
+
+void createEdge(void* params) {
+	StringStack *stack = ((CreateEdgeParams)params)->stack;
+	FStateMachine *machine = ((CreateEdgeParams)params)->machine;
+	Graph *graph = ((CreateEdgeParams)params)->graph;
+
+	char* edgeName = stackToString(stack);
+	createEdge(graph, edgeName); 
+}
 
 int onEntryCreate(void* params) {
 	Graph *g = ((CreateEdgeParams*)params)->graph;
